@@ -1,0 +1,1 @@
+This is a collection of files to download/scrape play by play (pbp) data from nba.com feeds, and perform useful analysis on said data.
