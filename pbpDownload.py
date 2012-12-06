@@ -1,5 +1,6 @@
 import pbpnba
 import datetime
+import pickle
 
 base = "http://data.nba.com/json/cms/noseason"
 #url = "http://data.nba.com/10s/json/cms/noseason/game/20121126/0021200013/pbp_1.json"
@@ -8,8 +9,11 @@ base = "http://data.nba.com/json/cms/noseason"
 
 oneDay = datetime.timedelta(days=1)
 startDate = datetime.date(2012,10,30)
-endDate = datetime.date.today()
+endDate = datetime.date(2012,11,2)
+#endDate = datetime.date.today()
 currentDate = startDate
+
+f = open('pbp2012', 'a')
 
 while currentDate < endDate:
 	#cycle through dates - find list of gameIDs from scoreboard JSON for each day.
@@ -18,9 +22,14 @@ while currentDate < endDate:
 	
 	#now, with the list of gameIDs, cycle through each game (and each period) to download the pbp JSON.
 	while len(gameID) != 0:
-		for period in [1,2,3,4]
-			pbpUrl = base + '/game/' + currentDate.strftime('%Y%m%d') + '/' + str( gameID.pop() ) + '/pbp_' + str(period) + '.json'
+		gameIDSingle = str( gameID.pop() )
+		for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
+			pbpUrl = base + '/game/' + currentDate.strftime('%Y%m%d') + '/' + gameIDSingle + '/pbp_' + str(period) + '.json'
 			periodPbpList = pbpnba.json2list(pbpUrl,period)
 			#periodPbpList is a list of that quarters pbp data: list is [gameDate,gameID,period,lPlay]
+			print gameIDSingle + ' ' + str( period )
+			pickle.dump(periodPbpList,f)
+			
 	currentDate += oneDay
-	
+
+f.close()	

@@ -3,6 +3,7 @@ import json
 import pylab
 import matplotlib
 import urllib2
+import pickle
 
 # function to convert unicode time remaining in pbp feed to 
 # seconds elapsed.
@@ -64,3 +65,4 @@ def jsonSBOpener(url):
 		gameID.append( d4.pop()['id'] )
 		
 	return gameID
+	
