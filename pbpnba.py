@@ -3,7 +3,6 @@ import json
 import pylab
 import matplotlib
 import urllib2
-import pickle
 
 # function to convert unicode time remaining in pbp feed to 
 # seconds elapsed.
@@ -34,9 +33,12 @@ def score_plot(playList):
 def json2list(url,period):
 	# takes in url of json, and outputs a list of :
 	# {gameDate,gameID,period,lPlay}
-	req = urllib2.Request(url)
-	opener = urllib2.build_opener()
-	f = opener.open(req)
+	try:
+		req = urllib2.Request(url)
+		opener = urllib2.build_opener()
+		f = opener.open(req)
+	except:
+		print url
 	d = json.load(f)
 	d2 = d['sports_content']
 	dGame = d2['game']
@@ -52,17 +54,18 @@ def json2list(url,period):
 	
 def jsonSBOpener(url):
 	# takes in url of scoreboard json, and outputs a list of gameIDs for that date.
-	req = urllib2.Request(url)
-	opener = urllib2.build_opener()
-	f = opener.open(req)
-	d = json.load(f)
-	d2 = d['sports_content']
-	d3 = d2['games']
-	d4 = d3['game']
-	gameID = []
-	
-	while len(d4) != 0:
-		gameID.append( d4.pop()['id'] )
-		
-	return gameID
-	
+	try:
+		req = urllib2.Request(url)
+		opener = urllib2.build_opener()
+		f = opener.open(req)
+		d = json.load(f)
+		d2 = d['sports_content']
+		d3 = d2['games']
+		d4 = d3['game']
+		gameID = []
+		while len(d4) != 0:
+			gameID.append( d4.pop()['id'] )
+		return gameID
+	except:
+		print url
+		return 'SBError'
