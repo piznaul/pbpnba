@@ -9,7 +9,6 @@ base = "http://data.nba.com/json/cms/noseason"
 
 oneDay = datetime.timedelta(days=1)
 startDate = datetime.date(2012,10,30)
-#endDate = datetime.date(2012,11,2)
 endDate = datetime.date.today()
 currentDate = startDate
 
@@ -36,7 +35,7 @@ while currentDate < endDate:
 						' ' + str( period )
 
 		currentDate += oneDay
-	else:
+	else: #no games on this day. move to next.
 		currentDate += oneDay
 
 

@@ -3,6 +3,9 @@ import json
 import pylab
 import matplotlib
 import urllib2
+import pickle
+import numpy
+
 
 # function to convert unicode time remaining in pbp feed to 
 # seconds elapsed.
@@ -18,7 +21,7 @@ def import_time(unicode_input):
 
 	return quarterLength - (minute*60 + second)
 	
-def score_plot(playList):
+def scoreArray(playList):
 	clock,homeScore,awayScore = [],[],[]
 
 	for p in playList:
@@ -28,7 +31,7 @@ def score_plot(playList):
 		homeScore.append( int( dPlaySingle['home_score'] ) )
 		awayScore.append( int( dPlaySingle['visitor_score'] ) )
 		
-	matplotlib.pyplot.plot(clock,homeScore,clock,awayScore)
+	return (clock,homeScore,awayScore)
 	
 def json2list(url,period):
 	# takes in url of json, and outputs a list of :
@@ -69,3 +72,43 @@ def jsonSBOpener(url):
 	except:
 		print url
 		return 'SBError'
+		
+def scorePlot(fileID,gameID):
+	clock,homeScore,awayScore = [],[],[]
+	cTemp,hTemp,aTemp = [],[],[]
+	d = pickle.load(fileID)
+	if d[1] == gameID:
+		for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
+			if d[2] == period:
+				(cTemp,hTemp,aTemp) = scoreArray( d[3] )
+				clock.append( cTemp )
+				homeScore.append( hTemp )
+				awayScore.append( aTemp )
+				d = pickle.load(fileID)
+	#need adjust each period's clock, in order to have a total running game time.
+	#then it can be flattened.
+	#may require switching first to numpy.array() object.
+	return (flatten(clock), flatten(homeScore), flatten(awayScore)) 		
+	#matplotlib.pyplot.plot(clock,homeScore,clock,awayScore)
+	
+def flatten(x):
+    """flatten(sequence) -> list
+
+    Returns a single, flat list which contains all elements retrieved
+    from the sequence and all recursively contained sub-sequences
+    (iterables).
+
+    Examples:
+    >>> [1, 2, [3,4], (5,6)]
+    [1, 2, [3, 4], (5, 6)]
+    >>> flatten([[[1,2,3], (42,None)], [4,5], [6], 7, MyVector(8,9,10)])
+    [1, 2, 3, 42, None, 4, 5, 6, 7, 8, 9, 10]"""
+
+    result = []
+    for el in x:
+        #if isinstance(el, (list, tuple)):
+        if hasattr(el, "__iter__") and not isinstance(el, basestring):
+            result.extend(flatten(el))
+        else:
+            result.append(el)
+    return result
