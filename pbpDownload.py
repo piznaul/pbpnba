@@ -8,11 +8,11 @@ base = "http://data.nba.com/json/cms/noseason"
 #date.strftime('%Y%m%d') will convert a datetime object to YYYYMMDD string.
 
 oneDay = datetime.timedelta(days=1)
-startDate = datetime.date(2012,10,30)
+startDate = datetime.date(2014,10,30)
 endDate = datetime.date.today()
 currentDate = startDate
 
-f = open('pbp2012', 'a')
+f = open('pbp2014', 'a')
 
 while currentDate < endDate:
 	#cycle through dates - find list of gameIDs from scoreboard JSON for each day.

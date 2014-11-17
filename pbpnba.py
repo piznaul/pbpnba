@@ -13,13 +13,11 @@ def import_time(unicode_input):
 	quarterLength = 12*60
 	if len(unicode_input) == 0:
 		# clock countdown has not started yet, time elapsed is 0.
-		minute = 0
-		second = 0
+		return int(0)
 	else:
 		minute = int( unicode_input[0]+unicode_input[1] )
 		second = int( unicode_input[3]+unicode_input[4] )
-
-	return quarterLength - (minute*60 + second)
+		return quarterLength - (minute*60 + second)
 	
 def scoreArray(playList):
 	clock,homeScore,awayScore = [],[],[]
@@ -43,15 +41,12 @@ def json2list(url,period):
 	except:
 		print url
 	d = json.load(f)
-	d2 = d['sports_content']
-	dGame = d2['game']
 	
-	
-	# output of 'play' key of dGame is a list, not a dict.
+	# output of 'play' key of d is a list, not a dict.
 	# individual plays are ordered 0..N
-	lPlay = dGame['play']
-	gameDate = dGame['date']
-	gameID = dGame['id']
+	lPlay = d['sports_content']['game']['play']
+	gameDate = d['sports_content']['game']['date']
+	gameID = d['sports_content']['game']['id']
 	listOutput = [gameDate, gameID, period, lPlay]
 	return listOutput
 	
@@ -62,12 +57,11 @@ def jsonSBOpener(url):
 		opener = urllib2.build_opener()
 		f = opener.open(req)
 		d = json.load(f)
-		d2 = d['sports_content']
-		d3 = d2['games']
-		d4 = d3['game']
 		gameID = []
-		while len(d4) != 0:
-			gameID.append( d4.pop()['id'] )
+		# remove initial layers of dict
+		d2 = d['sports_content']['games']['game']
+		while len(d2) != 0:
+			gameID.append( d2.pop()['id'] )
 		return gameID
 	except:
 		print url
@@ -81,14 +75,12 @@ def scorePlot(fileID,gameID):
 		for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
 			if d[2] == period:
 				(cTemp,hTemp,aTemp) = scoreArray( d[3] )
-				clock.append( cTemp )
+				cTempArray = numpy.array(cTemp) + 720*(period - 1)				
+				clock.append( cTempArray )
 				homeScore.append( hTemp )
 				awayScore.append( aTemp )
 				d = pickle.load(fileID)
-	#need adjust each period's clock, in order to have a total running game time.
-	#then it can be flattened.
-	#may require switching first to numpy.array() object.
-	return (flatten(clock), flatten(homeScore), flatten(awayScore)) 		
+	return (clock, flatten(homeScore), flatten(awayScore)) 		
 	#matplotlib.pyplot.plot(clock,homeScore,clock,awayScore)
 	
 def flatten(x):
