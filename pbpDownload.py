@@ -30,7 +30,7 @@ while currentDate < endDate:
 				#periodPbpList is a list of that quarters pbp data: 
 				#list is [gameDate,gameID,period,lPlay]
 				pickle.dump(periodPbpList,f)
-				if mod(int(gameIDSingle[-2:]),10) == 0 and period == 4:
+				if (int(gameIDSingle[-2:]) % 10) == 0 and period == 4:
 					print currentDate.strftime('%Y%m%d') + ' ' + gameIDSingle + \
 						' ' + str( period )
 
