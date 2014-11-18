@@ -1,16 +1,17 @@
 # module containing various functions for parsing nba play-by-play (pbp) data
 import json
 import pylab
-import matplotlib
+import matplotlib.pyplot as plt
 import urllib2
 import pickle
 import numpy
 import datetime
 
 
-# function to convert unicode time remaining in pbp feed to 
-# seconds elapsed.
+
 def import_time(unicode_input):
+	"""convert unicode time remaining in pbp feed to 
+		seconds elapsed.""" 
 	quarterLength = 12*60
 	if len(unicode_input) == 0:
 		# clock countdown has not started yet, time elapsed is 0.
@@ -33,8 +34,8 @@ def scoreArray(playList):
 	return (clock,homeScore,awayScore)
 	
 def json2list(url,period):
-	# takes in url of json, and outputs a list of :
-	# {gameDate,gameID,period,lPlay}
+	"""takes in url of play by play json, and outputs a list of :
+	{gameDate,gameID,period,lPlay}"""
 	try:
 		req = urllib2.Request(url)
 		opener = urllib2.build_opener()
@@ -52,7 +53,7 @@ def json2list(url,period):
 	return listOutput
 	
 def jsonSBOpener(url):
-	# takes in url of scoreboard json, and outputs a list of gameIDs for that date.
+	"""Takes in url of scoreboard json, and outputs a list of gameIDs for that 	date."""
 	try:
 		req = urllib2.Request(url)
 		opener = urllib2.build_opener()
@@ -68,21 +69,29 @@ def jsonSBOpener(url):
 		print url
 		return 'SBError'
 		
-def scorePlot(fileID,gameID):
+def scorePlot(playList,gameID):
+	"""Given a playlist and specific gameID, finds plays with given gameID
+		and computes the running score of each team as a function of time.  
+		Plots the result."""
 	clock,homeScore,awayScore = [],[],[]
 	cTemp,hTemp,aTemp = [],[],[]
-	d = pickle.load(fileID)
-	if d[1] == gameID:
-		for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
-			if d[2] == period:
-				(cTemp,hTemp,aTemp) = scoreArray( d[3] )
-				cTempArray = numpy.array(cTemp) + 720*(period - 1)				
-				clock.append( cTempArray )
-				homeScore.append( hTemp )
-				awayScore.append( aTemp )
-				d = pickle.load(fileID)
-	return (clock, flatten(homeScore), flatten(awayScore)) 		
-	#matplotlib.pyplot.plot(clock,homeScore,clock,awayScore)
+	#playList = pickle.load(fileID)
+	
+	for p in playList:
+		if p[1] == gameID:
+			for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
+				if p[2] == period:
+					(cTemp,hTemp,aTemp) = scoreArray( p[3] )
+					cTempArray = numpy.array(cTemp) + 720*(period - 1)				
+					clock.append( cTempArray )
+					homeScore.append( hTemp )
+					awayScore.append( aTemp )
+	clock = flatten(clock)
+	homeScore = flatten(homeScore)
+	awayScore = flatten(awayScore)
+	
+	plt.plot(clock,homeScore,clock,awayScore)
+	return (clock, homeScore, awayScore)
 	
 def flatten(x):
     """flatten(sequence) -> list
@@ -107,10 +116,10 @@ def flatten(x):
     return result
 	
 def download(filename):
+	"""downloads play by play(pbp) JSON data from nba.com website
+		Data is then converted from JSON to list using pbpnba.json2list
+		function"""
 
-	#temporary debugging
-	#import pdb
-	#pdb.set_trace()
 	
 	base = "http://data.nba.com/json/cms/noseason"
 
@@ -154,3 +163,7 @@ def download(filename):
 	pickle.dump(periodPbpList,f)
 	f.close()	
 	return periodPbpList
+
+def findGameID(playList,teamID):
+	"""returns list of gameIDs from playList where teamID is involved."""
+	return 1
