@@ -5,6 +5,7 @@ import matplotlib
 import urllib2
 import pickle
 import numpy
+import datetime
 
 
 # function to convert unicode time remaining in pbp feed to 
@@ -104,3 +105,52 @@ def flatten(x):
         else:
             result.append(el)
     return result
+	
+def download(filename):
+
+	#temporary debugging
+	#import pdb
+	#pdb.set_trace()
+	
+	base = "http://data.nba.com/json/cms/noseason"
+
+	#date format:  YYYYMMDD
+	#date.strftime('%Y%m%d') will convert a datetime object to YYYYMMDD string.
+
+	oneDay = datetime.timedelta(days=1)
+	startDate = datetime.date(2014,10,30)
+	endDate = datetime.date.today()
+	currentDate = startDate
+	
+	f = open(filename, 'a')
+	periodPbpList = []
+	
+	while currentDate < endDate:
+		#cycle through dates - find list of gameIDs from scoreboard JSON for each day.
+		sbUrl = base + '/scoreboard/' + currentDate.strftime('%Y%m%d') + '/games.json'
+		# This produces a list of gameIDs on this specific date.
+		gameID = jsonSBOpener(sbUrl)
+
+		if gameID != 'SBError':			
+			#now, with the list of gameIDs, cycle through each game (and each period) to download the pbp JSON.
+			while len(gameID) != 0:
+				gameIDSingle = str( gameID.pop() )
+				for period in [1,2,3,4]: #not sure what do to about OT - how are they signified in the JSON filename?
+					pbpUrl = base + '/game/' + currentDate.strftime('%Y%m%d') + \
+						'/' + gameIDSingle + '/pbp_' + str(period) + '.json'
+						
+					periodPbpList.append( json2list(pbpUrl,period) )
+					#periodPbpList is a list of that quarters pbp data: 
+					#list is [gameDate,gameID,period,lPlay]
+
+					if (int(gameIDSingle[-2:]) % 10) == 0 and period == 4:
+						print currentDate.strftime('%Y%m%d') + ' ' + gameIDSingle + \
+							' ' + str( period )
+
+			currentDate += oneDay
+		else: #no games on this day. move to next.
+			currentDate += oneDay
+
+	pickle.dump(periodPbpList,f)
+	f.close()	
+	return periodPbpList
