@@ -22,8 +22,9 @@ def import_time(unicode_input):
 		return quarterLength - (minute*60 + second)
 	
 def scoreArray(playList):
+	"""From a given playList, output the scores and corresponding times"""
 	clock,homeScore,awayScore = [],[],[]
-
+	"""playList is a list of dicts"""
 	for p in playList:
 		dPlaySingle = p
 
@@ -166,4 +167,14 @@ def download(filename):
 
 def findGameID(playList,teamID):
 	"""returns list of gameIDs from playList where teamID is involved."""
-	return 1
+	gameID = []
+	#gameLine format: [gameDate,gameID,period,lPlay]
+	for gameLine in playList:
+		#only perform this test if entry in playList is 1st period.  This will 
+		#eliminate duplicate gameIDs
+		if gameLine[2] == 1:
+			if gameLine[3][1]['team_abr'] == teamID:
+				gameID.append(gameLine[1])
+			if gameLine[3][2]['team_abr'] == teamID:
+				gameID.append(gameLine[1])	
+	return gameID
