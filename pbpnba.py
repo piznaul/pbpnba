@@ -70,10 +70,10 @@ def jsonSBOpener(url):
 		print url
 		return 'SBError'
 		
-def scorePlot(playList,gameID):
+def scorePlot(playList,gameID,team):
 	"""Given a playlist and specific gameID, finds plays with given gameID
 		and computes the running score of each team as a function of time.  
-		Plots the result."""
+		Plots the result, based on 'team' flag: 'home','away', or 'both'."""
 	clock,homeScore,awayScore = [],[],[]
 	cTemp,hTemp,aTemp = [],[],[]
 	#playList = pickle.load(fileID)
@@ -91,7 +91,12 @@ def scorePlot(playList,gameID):
 	homeScore = flatten(homeScore)
 	awayScore = flatten(awayScore)
 	
-	plt.plot(clock,homeScore,clock,awayScore)
+	if team == 'home':
+		plt.plot(clock,homeScore)
+	elif team == 'away':
+		plt.plot(clock,awayScore)
+	elif team == 'both':
+		plt.plot(clock,homeScore,clock,awayScore)
 	return (clock, homeScore, awayScore)
 	
 def flatten(x):
@@ -166,15 +171,16 @@ def download(filename):
 	return periodPbpList
 
 def findGameID(playList,teamID):
-	"""returns list of gameIDs from playList where teamID is involved."""
+	"""returns a 2D list of gameIDs from playList where teamID is involved.
+		Each row contains gameID and whether team was home or away."""
 	gameID = []
 	#gameLine format: [gameDate,gameID,period,lPlay]
 	for gameLine in playList:
 		#only perform this test if entry in playList is 1st period.  This will 
 		#eliminate duplicate gameIDs
 		if gameLine[2] == 1:
-			if gameLine[3][1]['team_abr'] == teamID:
-				gameID.append(gameLine[1])
-			if gameLine[3][2]['team_abr'] == teamID:
-				gameID.append(gameLine[1])	
+			if gameLine[3][1]['team_abr'] == teamID: #Home Team
+				gameID.append([gameLine[1], 'home'])
+			if gameLine[3][2]['team_abr'] == teamID: #Away Team
+				gameID.append([gameLine[1], 'away'])	
 	return gameID
